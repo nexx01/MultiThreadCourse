@@ -32,12 +32,11 @@ public class CompletableFuturePractice {
 
         public double getMinPrice(long itemId) {
             // здесь будет ваш код
-            int someItemId = 1;
             int maxTimeWaitingMillis = 2900;
 
             List<CompletableFuture<Double>> collect = shopIds.stream()
                     .map(id -> CompletableFuture.supplyAsync(
-                                    () -> priceRetriever.getPrice(someItemId, id))
+                                    () -> priceRetriever.getPrice(itemId, id))
                             .completeOnTimeout(Double.MAX_VALUE,maxTimeWaitingMillis,TimeUnit.MILLISECONDS)
                     )
                     .collect(Collectors.toList());
@@ -57,6 +56,7 @@ public class CompletableFuturePractice {
     public static void main(String[] args) {
         PriceAggregator priceAggregator = new PriceAggregator();
         long itemId = 12l;
+
 
         long start = System.currentTimeMillis();
         double min = priceAggregator.getMinPrice(itemId);
