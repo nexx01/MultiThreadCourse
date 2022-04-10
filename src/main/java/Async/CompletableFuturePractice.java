@@ -7,6 +7,9 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static java.lang.Double.POSITIVE_INFINITY;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
 public class CompletableFuturePractice {
 
     public static class PriceRetriever {
@@ -25,6 +28,15 @@ public class CompletableFuturePractice {
 
     public static class PriceAggregator {
 
+        /**
+         * Максимальное время ожидание ответа
+         */
+        public static final int MAX_TIME_WAITING_MILLIS = 2000;
+        /**
+         * Минимальная цена по умолчанию
+         */
+        public static final double DEFAULT_MIN_VALUE = 0.00;
+
         private PriceRetriever priceRetriever = new PriceRetriever();
 
         private Set<Long> shopIds = Set.of(10l, 45l, 66l, 345l, 234l, 333l,
@@ -32,23 +44,19 @@ public class CompletableFuturePractice {
 
         public double getMinPrice(long itemId) {
             // здесь будет ваш код
-            int maxTimeWaitingMillis = 2900;
 
             List<CompletableFuture<Double>> collect = shopIds.stream()
                     .map(id -> CompletableFuture.supplyAsync(
                                     () -> priceRetriever.getPrice(itemId, id))
-                            .completeOnTimeout(Double.MAX_VALUE,maxTimeWaitingMillis,TimeUnit.MILLISECONDS)
+                            .completeOnTimeout(POSITIVE_INFINITY, MAX_TIME_WAITING_MILLIS,MILLISECONDS)
                     )
                     .collect(Collectors.toList());
 
-            double defaultMinValue = 0.00;
-
             return CompletableFuture.allOf(collect.toArray(new CompletableFuture[0]))
                     .thenApply(v -> collect.stream()
-                            .map(CompletableFuture::join)
-                            .filter(pr->pr<Double.MAX_VALUE)
-                            .min(Double::compareTo)
-                            .orElse(defaultMinValue))
+                            .mapToDouble(CompletableFuture::join)
+                            .min()
+                            .orElse(DEFAULT_MIN_VALUE))
                     .join();
         }
     }
