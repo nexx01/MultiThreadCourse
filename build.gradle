@@ -17,12 +17,19 @@ ext {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-	implementation 'org.springframework.boot:spring-boot-starter-webflux'
-	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'io.projectreactor:reactor-test'
-	testImplementation 'org.testcontainers:junit-jupiter'
+//	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+//	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+//	implementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+//	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+//	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+//	testImplementation 'io.projectreactor:reactor-test'
+//	testImplementation 'org.testcontainers:junit-jupiter'
+	testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
+	testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.8.2')
+//	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+
+
+
 }
 
 dependencyManagement {
@@ -34,3 +41,11 @@ dependencyManagement {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+test {
+	useJUnitPlatform()
+}
+tasks.test {
+	useJUnitPlatform()
+}
+
