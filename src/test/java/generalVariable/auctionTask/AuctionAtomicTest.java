@@ -12,8 +12,7 @@ class AuctionAtomicTest {
     @RepeatedTest(1000)
     void testAuctionAtomic() throws InterruptedException {
         long start = System.currentTimeMillis();
-        AuctionAtomic auction = new AuctionAtomic(); //850-1100
-
+        AuctionAtomic auction = new AuctionAtomic(0L); //850-1100
         var fixedThreadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
         fixedThreadPool.submit(() -> auction.propose(new AuctionAtomic.Bid(2l, 2l, 2l)));
         fixedThreadPool.submit(() -> auction.propose(new AuctionAtomic.Bid(3l, 3l, 3l)));

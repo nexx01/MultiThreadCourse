@@ -33,6 +33,10 @@ public class AuctionAtomic {
     private final AtomicReference<Bid> latestBid
             = new AtomicReference<>(new Bid(1L, 1L, 1L));
 
+    public AuctionAtomic(Long startedPrice) {
+        latestBid.set(new Bid(0L, 0L, startedPrice));
+    }
+
     public  boolean propose(Bid bid) {
         var sended=false;
         Bid current = this.latestBid.get();
