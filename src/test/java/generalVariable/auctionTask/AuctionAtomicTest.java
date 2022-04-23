@@ -1,29 +1,55 @@
 package generalVariable.auctionTask;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import static generalVariable.auctionTask.AuctionAtomic.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class AuctionAtomicTest {
 
+    @Spy
+    @InjectMocks
+    AuctionAtomic auction =new AuctionAtomic(0L);
+
+    @Mock
+    Notifier notifier;
+
     @RepeatedTest(1000)
-    void testAuctionAtomic() throws InterruptedException {
+    void testAuctionAtomicDelay10() throws InterruptedException {
+        int maxDelay = 2000;
+
+        doAnswer(invocation->{
+            Thread.sleep(new Random().nextInt(maxDelay));
+            return null;
+                }
+        ).when(notifier).sendOutdatedMessage(any(Bid.class));
+
         long start = System.currentTimeMillis();
-        AuctionAtomic auction = new AuctionAtomic(0L); //850-1100
         var fixedThreadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
-        fixedThreadPool.submit(() -> auction.propose(new AuctionAtomic.Bid(2l, 2l, 2l)));
-        fixedThreadPool.submit(() -> auction.propose(new AuctionAtomic.Bid(3l, 3l, 3l)));
-        fixedThreadPool.submit(() -> auction.propose(new AuctionAtomic.Bid(4l, 4l, 4l)));
-        fixedThreadPool.submit(() -> auction.propose(new AuctionAtomic.Bid(6l, 2l, 6l)));
-        fixedThreadPool.submit(() -> auction.propose(new AuctionAtomic.Bid(7l, 2l, 2l)));
-        fixedThreadPool.submit(() -> auction.propose(new AuctionAtomic.Bid(11l, 11l, 10l)));
-        fixedThreadPool.submit(() -> auction.propose(new AuctionAtomic.Bid(8l, 1l, 1l)));
-        fixedThreadPool.submit(() -> auction.propose(new AuctionAtomic.Bid(9l, 1l, 1l)));
-        fixedThreadPool.submit(() -> auction.propose(new AuctionAtomic.Bid(10l, 1l, 1l)));
-        fixedThreadPool.submit(() -> auction.propose(new AuctionAtomic.Bid(12l, 21l, 21l)));
+        fixedThreadPool.submit(() -> auction.propose(new Bid(2l, 2l, 2l)));
+        fixedThreadPool.submit(() -> auction.propose(new Bid(3l, 3l, 3l)));
+        fixedThreadPool.submit(() -> auction.propose(new Bid(4l, 4l, 4l)));
+        fixedThreadPool.submit(() -> auction.propose(new Bid(6l, 2l, 6l)));
+        fixedThreadPool.submit(() -> auction.propose(new Bid(7l, 2l, 2l)));
+        fixedThreadPool.submit(() -> auction.propose(new Bid(11l, 11l, 10l)));
+        fixedThreadPool.submit(() -> auction.propose(new Bid(8l, 1l, 1l)));
+        fixedThreadPool.submit(() -> auction.propose(new Bid(9l, 1l, 1l)));
+        fixedThreadPool.submit(() -> auction.propose(new Bid(10l, 1l, 1l)));
+        fixedThreadPool.submit(() -> auction.propose(new Bid(12l, 21l, 21l)));
 
         while (fixedThreadPool.getActiveCount() > 0) {
             Thread.sleep(100);
@@ -39,4 +65,7 @@ class AuctionAtomicTest {
             assertEquals(12L, auction.getLatestBid().id);
         });
     }
+
+
+
 }

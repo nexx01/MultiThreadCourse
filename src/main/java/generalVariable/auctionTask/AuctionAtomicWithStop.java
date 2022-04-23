@@ -20,15 +20,10 @@ public class AuctionAtomicWithStop {
 
     public static class Notifier {
         public void sendOutdatedMessage(Bid bid) {
-            try {
-                Thread.sleep(new Random().nextLong(2000));
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
         }
     }
 
-    private final Notifier notifier = new Notifier();
+    private  Notifier notifier = new Notifier();
     //Признак, остановки аукциона
     private volatile boolean isStopped;
     //Последняя установленная цена

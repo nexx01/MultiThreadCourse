@@ -1,6 +1,7 @@
 package generalVariable.auctionTask;
 
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class AuctionAtomic {
@@ -18,20 +19,12 @@ public class AuctionAtomic {
     }
 
     public static class Notifier {
-        public void sendOutdatedMessage(Bid bid) {
-            try {
-                long time = new Random().nextLong(300);
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+        public void sendOutdatedMessage(Bid bid) {}
     }
 
     private Notifier notifier = new Notifier();
 
-    private final AtomicReference<Bid> latestBid
-            = new AtomicReference<>(new Bid(1L, 1L, 1L));
+    private final AtomicReference<Bid> latestBid = new AtomicReference<>();
 
     public AuctionAtomic(Long startedPrice) {
         latestBid.set(new Bid(0L, 0L, startedPrice));
