@@ -28,7 +28,7 @@ class AuctionAtomicWithStopTest {
     @Mock
     Notifier notifier;
 
-    @RepeatedTest(1000)
+    @RepeatedTest(100)
     void testAuctionAtomicWithStop() throws InterruptedException {
         int maxDelay = 1;
 
