@@ -53,13 +53,12 @@ public class AuctionAtomicWithThreadPoolUltimateStop {
     public boolean propose(Bid bid) throws ExecutionException,
             InterruptedException {
 
-        if (latestBid.isMarked()&& bid.price > latestBid.getReference().price) {
-
+        if (!latestBid.isMarked()&& bid.price > latestBid.getReference().price) {
             //пытаемся обновить
             return fixedThreadPool.submit(() -> {
                 var res = false;
                 Bid current = this.latestBid.getReference();
-                while ( bid.price > current.price && !res) {
+                while (  bid.price > current.price && !res) {
                     res = this.latestBid.compareAndSet(current, bid,false,false);
                     if (res) {
                         // если удалось обновить, отправляем сообщение
@@ -81,6 +80,8 @@ public class AuctionAtomicWithThreadPoolUltimateStop {
     }
 
     public void stopAuction() {
-        while (latestBid.attemptMark(latestBid.getReference(), true)) {}
+        while (!latestBid.attemptMark(latestBid.getReference(), true)) {
+            System.out.println("-");
+        }
     }
 }
