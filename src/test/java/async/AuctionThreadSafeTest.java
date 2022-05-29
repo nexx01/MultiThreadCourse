@@ -1,4 +1,4 @@
-package Async;
+package async;
 
 import org.junit.jupiter.api.Test;
 

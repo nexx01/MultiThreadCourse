@@ -1,10 +1,9 @@
-package Async;
+package async;
 
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static java.lang.Double.POSITIVE_INFINITY;
@@ -14,7 +13,7 @@ public class CompletableFuturePractice {
 
     public static class PriceRetriever {
 
-        public double getPrice(long itemId, long shopId) {
+        public double getPrice(Long itemId, Long shopId) {
             // имитация долгого HTTP-запроса
             int delay = ThreadLocalRandom.current().nextInt(10);
             try {
@@ -31,7 +30,7 @@ public class CompletableFuturePractice {
         /**
          * Максимальное время ожидание ответа
          */
-        public static final int MAX_TIME_WAITING_MILLIS = 2000;
+        public static final int MAX_TIME_WAITING_MILLIS = 2900;
         /**
          * Минимальная цена по умолчанию
          */
@@ -39,7 +38,7 @@ public class CompletableFuturePractice {
 
         private PriceRetriever priceRetriever = new PriceRetriever();
 
-        private Set<Long> shopIds = Set.of(10l, 45l, 66l, 345l, 234l, 333l,
+         Set<Long> shopIds = Set.of(10l, 45l, 66l, 345l, 234l, 333l,
                 67l, 123l, 768l);
 
         public double getMinPrice(long itemId) {
