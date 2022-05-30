@@ -47,9 +47,9 @@ public class CompletableFuturePractice {
             List<CompletableFuture<Double>> collect = shopIds.stream()
                     .map(id -> CompletableFuture.supplyAsync(
                                     () -> priceRetriever.getPrice(itemId, id))
-                            .completeOnTimeout(POSITIVE_INFINITY, MAX_TIME_WAITING_MILLIS,MILLISECONDS)
-                    )
-                    .collect(Collectors.toList());
+                            .completeOnTimeout(POSITIVE_INFINITY, MAX_TIME_WAITING_MILLIS, MILLISECONDS)
+                            .exceptionally(ex -> POSITIVE_INFINITY)
+                    ).toList();
 
             return CompletableFuture.allOf(collect.toArray(new CompletableFuture[0]))
                     .thenApply(v -> collect.stream()

@@ -1,5 +1,6 @@
 package async;
 
+import org.apache.http.conn.HttpHostConnectException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 
 @ExtendWith(MockitoExtension.class)
 class CompletableFuturePracticeTest {
@@ -102,6 +104,23 @@ class CompletableFuturePracticeTest {
 
         assertEquals(expected, actual);
     }
+//HttpClientException
 
+    @Test
+    @DisplayName("Если getPrice вернет исключение")
+    @Timeout(value = MAX_TIME_WAITING_MILLIS+100, unit = MILLISECONDS)
+    void test_iFWillException() {
+        var expected = 100.0;
+        doAnswer(invocation -> ThreadLocalRandom.current().nextDouble(expected,MAX_VALUE))
+                .when(priceRetriever).getPrice(any(),any());
+
+        doThrow(new RuntimeException("Mock HttpClientException")).when(priceRetriever).getPrice(1L,45l);
+
+        doAnswer(invocation -> expected).when(priceRetriever).getPrice(1L,10l);
+
+            double actual = subj.getMinPrice(1L);
+
+            assertEquals(expected, actual);
+        }
 
 }
