@@ -64,21 +64,21 @@ class AuctionAtomicWithStopTest {
         ).when(notifier).sendOutdatedMessage(any(AuctionAtomicWithThreadPoolUltimateStop.Bid.class));
 
         ExecutorService executorService = Executors.newFixedThreadPool(10);
-        CountDownLatch countDownLatch = new CountDownLatch(10);
+        CyclicBarrier cyclicBarrier = new CyclicBarrier(10);
 
         for (long i = 10; i > 0; i--) {
             long finalI = i;
-            executorService.submit (() -> {
-                countDownLatch.countDown();
+            executorService.submit(() -> {
                 try {
+                    cyclicBarrier.await();
                     auction.propose(new AuctionAtomicWithThreadPoolUltimateStop.Bid(finalI, finalI, finalI));
-                } catch (ExecutionException | InterruptedException e) {
+                } catch (ExecutionException | InterruptedException | BrokenBarrierException e) {
                     throw new RuntimeException(e);
                 }
             });
         }
 
-            countDownLatch.await();
+        executorService.awaitTermination(10, TimeUnit.MILLISECONDS);
 
         assertAll(() -> {
             assertEquals(10L, auction.getLatestBid().price);
@@ -96,37 +96,33 @@ class AuctionAtomicWithStopTest {
                 }
         ).when(notifier).sendOutdatedMessage(any(AuctionAtomicWithThreadPoolUltimateStop.Bid.class));
 
-        CountDownLatch countDownLatch = new CountDownLatch(10);
         CyclicBarrier cyclicBarrier = new CyclicBarrier(10);
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
 
-        for (long i = 10; i > 0; i--) {
+        for (long i = 0; i < 10; i++) {
             long finalI = i;
-            new Thread(() -> {
+            executorService.submit(() -> {
                 try {
                     cyclicBarrier.await();
-                } catch (InterruptedException | BrokenBarrierException e) {
-                    throw new RuntimeException(e);
-                }
-                try {
                     auction.propose(new AuctionAtomicWithThreadPoolUltimateStop.Bid(finalI, finalI, finalI));
-                } catch (ExecutionException | InterruptedException e) {
+                } catch (ExecutionException | InterruptedException | BrokenBarrierException e) {
                     throw new RuntimeException(e);
                 }
-                countDownLatch.countDown();
-            }).start();
+            });
         }
 
-        countDownLatch.await();
+        executorService.awaitTermination(60, TimeUnit.MILLISECONDS);
 
         assertAll(() -> {
-            assertEquals(10L, auction.getLatestBid().price);
-            assertEquals(10L, auction.getLatestBid().participantId);
-            assertEquals(10L, auction.getLatestBid().id);
+            assertEquals(9L, auction.getLatestBid().price);
+            assertEquals(9L, auction.getLatestBid().participantId);
+            assertEquals(9L, auction.getLatestBid().id);
         });
     }
 
     @Test
     @DisplayName("Обновление цены в несколько потоков с остановкой")
+    @RepeatedTest(1000)
     void testProposeConcurrentlyWithStop() throws InterruptedException, BrokenBarrierException {
         var maxDelay = 100;
         lenient().doAnswer(invocation -> {
@@ -135,15 +131,7 @@ class AuctionAtomicWithStopTest {
                 }
         ).when(notifier).sendOutdatedMessage(any(AuctionAtomicWithThreadPoolUltimateStop.Bid.class));
 
-        CountDownLatch countDownLatch = new CountDownLatch(5);
-        CyclicBarrier cyclicBarrier = new CyclicBarrier(5,()->{
-            try {
-                countDownLatch.await();
-                auction.stopAuction();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        CyclicBarrier cyclicBarrier = new CyclicBarrier(5, () -> auction.stopAuction());
         ExecutorService executorService = Executors.newFixedThreadPool(5);
 
         for (long i = 0; i < 10; i++) {
@@ -151,14 +139,14 @@ class AuctionAtomicWithStopTest {
             executorService.submit(() -> {
                 try {
                     auction.propose(new AuctionAtomicWithThreadPoolUltimateStop.Bid(finalI, finalI, finalI));
-                    countDownLatch.countDown();
                     cyclicBarrier.await();
                 } catch (ExecutionException | InterruptedException | BrokenBarrierException e) {
                     throw new RuntimeException(e);
                 }
             });
         }
-        cyclicBarrier.await();
+
+        executorService.awaitTermination(100, TimeUnit.MILLISECONDS);
 
         assertAll(() -> {
             assertEquals(4L, auction.getLatestBid().price);
