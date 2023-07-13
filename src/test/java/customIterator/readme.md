@@ -1,0 +1,2 @@
+- [custom palindrom iterator](https://www.baeldung.com/java-creating-custom-iterator)
+- custom iterator 
